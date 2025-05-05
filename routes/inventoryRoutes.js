@@ -10,10 +10,10 @@ const inventario = {
     '0003': { id: '0003', name: 'Galleta de chips', price: 3000, stock: 16, category: 'panaderia' }
   },
   puntoSandwich: {
-    '0002': { id: '0002', name: 'Pizza', price: 15000, stock: 8, category: 'fuertes' }
+    '0001': { id: '0001', name: 'Pizza', price: 15000, stock: 8, category: 'fuertes' }
   },
   puntoWok: {
-    '0003': { id: '0003', name: 'Wok de Pollo', price: 13000, stock: 5, category: 'fuertes' }
+    '0001': { id: '0001', name: 'Wok de Pollo', price: 13000, stock: 5, category: 'fuertes' }
   }
 };
 //----------------------------------------------------------------------------------------------------------
@@ -120,7 +120,11 @@ router.delete('/inventory/:restauranteId/:productId', (req, res) => {
 });
 
 
-module.exports = router;
+module.exports = {
+  router,
+  inventario
+};
+
 
 
 

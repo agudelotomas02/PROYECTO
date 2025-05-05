@@ -1,10 +1,15 @@
 const express = require('express');
 const app = express();
 
-const inventoryRoutes = require('./routes/inventoryRoutes');
+const { router: inventoryRoutes } = require('./routes/inventoryRoutes');
+
 
 app.use(express.json());
 app.use('/api', inventoryRoutes);
+
+const cartsRoutes = require('./routes/cartsRoutes');
+app.use('/api', cartsRoutes);
+
 
 const PORT = 3000;
 app.listen(PORT, () => {
