@@ -8,5 +8,5 @@ app.use('/api', inventoryRoutes);
 
 const PORT = 3000;
 app.listen(PORT, () => {
-    console.log('Servidor corriendo en puerto ${PORT}');
+    console.log(`It's alive on http://localhost:${PORT}`);
 });

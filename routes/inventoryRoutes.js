@@ -1,74 +1,128 @@
 const express = require('express');
 const router = express.Router();
 
-const inventario = [
-  { id: 'prod1', nombre: 'Hamburguesa', ubicacion: 'Embarcadero' },
-  { id: 'prod2', nombre: 'Pizza', ubicacion: 'Punto Sandwich' },
-  { id: 'prod3', nombre: 'Wok de Pollo', ubicacion: 'Punto Wok' }
-];
+//----------------------------------------------------------------------------------------------------------
+// Inventario organizado por restaurante
+const inventario = {
+  embarcadero: {
+    '0001': { id: '0001', name: 'Hamburguesa', price: 12000, stock: 10, category: 'fuertes' },
+    '0002': { id: '0002', name: 'Hamburguesa de pollo', price: 12000, stock: 11, category: 'fuertes' },
+    '0003': { id: '0003', name: 'Galleta de chips', price: 3000, stock: 16, category: 'panaderia' }
+  },
+  puntoSandwich: {
+    '0002': { id: '0002', name: 'Pizza', price: 15000, stock: 8, category: 'fuertes' }
+  },
+  puntoWok: {
+    '0003': { id: '0003', name: 'Wok de Pollo', price: 13000, stock: 5, category: 'fuertes' }
+  }
+};
+//----------------------------------------------------------------------------------------------------------
 
-// GET: devuelve todos o filtra
-router.get('/inventory', (req, res) => {
-  const filtro = req.query.filter;
+// GET: búsqueda global para cliente (con o sin filtro)
+router.get('/inventory/cliente', (req, res) => {
+  const filtro = req.query.filter?.toLowerCase().trim();
+  const resultado = [];
 
-  if (typeof filtro === 'string' && filtro.trim() !== '') {
-    const resultado = inventario.filter(p =>
-      p.nombre.toLowerCase().includes(filtro.toLowerCase())
-    );
-    return res.json(resultado);
+  // Recorrer todos los restaurantes
+  for (const restauranteId in inventario) {
+    const productos = inventario[restauranteId];
+
+    for (const productoId in productos) {
+      const producto = productos[productoId];
+
+      // Si hay filtro, solo agregar si coincide. Si no hay filtro, agregar todo.
+      if (!filtro || producto.name.toLowerCase().includes(filtro)) {
+        resultado.push({
+          restaurante: restauranteId,
+          ...producto
+        });
+      }
+    }
   }
 
-  res.json(inventario);
+  if (resultado.length === 0) {
+    return res.status(404).json({ mensaje: 'No se encontraron productos' });
+  }
+
+  res.json(resultado);
+});
+//----------------------------------------------------------------------------------------------------------
+
+// GET: todos los productos de un restaurante
+router.get('/inventory/:restauranteId', (req, res) => {
+  const { restauranteId } = req.params;
+  const filtro = req.query.filter;
+
+  const restaurante = inventario[restauranteId];
+  if (!restaurante) return res.status(404).json({ error: 'Restaurante no encontrado' });
+
+  let productos = Object.values(restaurante);
+
+  if (typeof filtro === 'string' && filtro.trim() !== '') {
+    productos = productos.filter(p =>
+      p.name.toLowerCase().includes(filtro.toLowerCase())
+    );
+  }
+
+  res.json(productos);
 });
 
-// POST: agrega nuevo producto
-router.post('/inventory', (req, res) => {
-  const { id, nombre, ubicacion } = req.body;
+// POST: agregar producto a un restaurante
+router.post('/inventory/:restauranteId', (req, res) => {
+  const { restauranteId } = req.params;
+  const { id, name, price, stock, category } = req.body;
 
-  if (!id || !nombre || !ubicacion) {
+  if (!id || !name || !price || !stock || !category) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
   }
 
-  inventario.push({ id, nombre, ubicacion });
+  if (!inventario[restauranteId]) {
+    inventario[restauranteId] = {};
+  }
+
+  inventario[restauranteId][id] = { id, name, price, stock, category };
 
   res.status(201).json({
     mensaje: 'Producto registrado',
-    producto: { id, nombre, ubicacion }
+    producto: inventario[restauranteId][id]
   });
 });
 
-module.exports = router;
+// PUT: actualizar producto de un restaurante
+router.put('/inventory/:restauranteId/:productId', (req, res) => {
+  const { restauranteId, productId } = req.params;
+  const { name, price, stock, category } = req.body;
 
+  const producto = inventario[restauranteId]?.[productId];
+  if (!producto) return res.status(404).json({ error: 'Producto no encontrado' });
 
-// PUT /api/inventory/:id - actualizar producto
-router.put('/inventory/:id', (req, res) => {
-  const { id } = req.params;
-  const { nombre, ubicacion } = req.body;
-
-  const producto = inventario.find(p => p.id === id);
-
-  if (!producto) {
-    return res.status(404).json({ error: 'Producto no encontrado' });
-  }
-
-  if (nombre) producto.nombre = nombre;
-  if (ubicacion) producto.ubicacion = ubicacion;
+  if (name) producto.name = name;
+  if (price) producto.price = price;
+  if (stock) producto.stock = stock;
+  if (category) producto.category = category;
 
   res.json({ mensaje: 'Producto actualizado', producto });
 });
 
+// DELETE: eliminar producto de un restaurante
+router.delete('/inventory/:restauranteId/:productId', (req, res) => {
+  const { restauranteId, productId } = req.params;
 
-// DELETE /api/inventory/:id - eliminar producto
-router.delete('/inventory/:id', (req, res) => {
-  const { id } = req.params;
-
-  const index = inventario.findIndex(p => p.id === id);
-
-  if (index === -1) {
+  const restaurante = inventario[restauranteId];
+  if (!restaurante || !restaurante[productId]) {
     return res.status(404).json({ error: 'Producto no encontrado' });
   }
 
-  const eliminado = inventario.splice(index, 1);
+  const eliminado = restaurante[productId];
+  delete restaurante[productId];
 
   res.json({ mensaje: 'Producto eliminado', eliminado });
 });
+
+
+module.exports = router;
+
+
+
+
+
