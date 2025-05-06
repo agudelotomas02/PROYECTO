@@ -1,4 +1,3 @@
-// routes/cartsRoutes.js
 const express = require('express');
 const router = express.Router();
 
@@ -89,4 +88,7 @@ router.delete('/cart/:usuario/:restauranteId/:productoId', (req, res) => {
   res.json({ mensaje: 'Producto eliminado del carrito' });
 });
 
-module.exports = router;
+module.exports = {
+    router,
+    carritos
+  };
