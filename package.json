@@ -11,9 +11,10 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "express": "^5.1.0"
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2"
   },
-  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/agudelotomas02/PROYECTO.git"

@@ -1,9 +1,15 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
 
-const { router: inventoryRoutes } = require('./routes/inventoryRoutes');
-
+app.use(cors());
 app.use(express.json());
+
+const authRoutes = require('./routes/authRoutes');
+app.use('/api', authRoutes); 
+
+
+const { router: inventoryRoutes } = require('./routes/inventoryRoutes');
 app.use('/api', inventoryRoutes);
 
 const { router: cartsRoutes } = require('./routes/cartsRoutes');
@@ -11,6 +17,7 @@ app.use('/api', cartsRoutes);
 
 const { router: pedidosRoutes } = require('./routes/pedidosRoutes');
 app.use('/api', pedidosRoutes);
+
 
 const PORT = 3000;
 app.listen(PORT, () => {
